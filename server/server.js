@@ -87,7 +87,18 @@ app.get('/todos/categories/:view', (req, res) => {
 });
 
 app.post('/todos/categories', (req, res) => {
-    let { id, newCategory, category } = req.query;
+    let { id, category } = req.query;
+    let newCategory;
+    if (category) {
+        newCategory = [...category.split(',')];
+    }
+    let addNewCategory = todos.filter((item) => {
+        if (item.id === parseInt(id)) {
+            return (item.category = newCategory);
+        }
+    });
+    res.send(todos);
+    /*     let { id, newCategory, category } = req.query;
     let addedCategory = {
         category: newCategory
     };
@@ -99,7 +110,7 @@ app.post('/todos/categories', (req, res) => {
         }
     });
     console.log(todos);
-    res.send(todos);
+    res.send(todos); */
 });
 
 app.put('/todos/categories', (req, res) => {
