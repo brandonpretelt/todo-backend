@@ -87,7 +87,6 @@ app.get('/todos/categories/:view', (req, res) => {
 });
 
 app.post('/todos/categories', (req, res) => {
-    // let categories = [];
     let { id, newCategory, category } = req.query;
     let addedCategory = {
         category: newCategory
