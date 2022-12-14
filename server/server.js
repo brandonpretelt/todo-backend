@@ -38,72 +38,89 @@ app.post('/todos', (req, res) => {
 });
 
 app.put('/todos', (req, res) => {
-    const { id } = req.query;
-    let updatedTodos;
-    todos.filter((item) => {
-        updatedTodos = [];
-        if (item.id === id) {
-            updatedTodos.push({
-                id: id,
-                todoContent: req.query.todoContent,
-                done: false,
-                category: 'none'
-            });
+    const { id, newContent, todoContent } = req.query;
+    let updatedTodo = {
+        todoContent: newContent
+    };
+    let updatedTodosList = todos.filter((item) => {
+        if (item.id === parseInt(id)) {
+            return (item.todoContent = updatedTodo.todoContent);
         }
     });
-
-    res.status(200).send(updatedTodos);
+    res.status(200).send(todos);
 });
 
 app.delete('/todos', (req, res) => {
     let { id } = req.query;
-    let deleted = todos.filter((item) => {
-        if (item.id === id) {
-            return;
-        }
-    });
-
-    res.send(deleted);
+    let deleted = todos.findIndex((item) => item.id === id);
+    todos.splice(deleted, 1);
+    res.send(todos);
 });
 
-app.get('/todos/category', (req, res) => {
-    let categories = [];
+app.get('/todos/categories', (req, res) => {
+    let categoryArray = [];
+    let { category } = req.query;
+    todos.filter((item) => {
+        console.log(typeof item.category);
+        if (item.category === category) {
+            if (
+                Array.isArray(item.category) ||
+                typeof item.category == 'object'
+            ) {
+                categoryArray.push(Array.from(category));
+            }
+            categoryArray.push(item);
+        }
+    });
+    res.send(categoryArray);
+});
+
+app.get('/todos/categories/:view', (req, res) => {
+    let categoryArray = [];
     let { category } = req.query;
     todos.filter((item) => {
         if (item.category === category) {
-            categories.push(item);
+            categoryArray.push(item.category);
         }
     });
-    res.send(categories);
+    res.send(categoryArray);
 });
 
-app.get('/todos/category/:view', (req, res) => {
-    let categories = [];
-    let { category } = req.query;
-    todos.filter((item) => {
-        if (item.category === category) {
-            categories.push(item.category);
+app.post('/todos/categories', (req, res) => {
+    // let categories = [];
+    let { id, newCategory, category } = req.query;
+    let addedCategory = {
+        category: newCategory
+    };
+    console.log(typeof id);
+    let addNewCategory = todos.filter((item) => {
+        if (item.id === parseInt(id)) {
+            console.log(typeof item.id);
+            return (item.category = [item.category, addedCategory.category]);
         }
     });
-    res.send(categories);
+    console.log(todos);
+    res.send(todos);
 });
 
-app.post('/todos/category', (req, res) => {
-    let categories = [];
-    let { newCategory } = req.query;
-    categories.push(newCategory);
-    res.send(categories);
-});
-
-app.put('/todos/category', (req, res) => {
-    let { updatedCategory, category } = req.query;
-    let categories = [];
+app.put('/todos/categories', (req, res) => {
+    let { editedCategory, category, id } = req.query;
+    let updatedCategory = {
+        category: editedCategory
+    };
+    let updatedCategories = todos.filter((item) => {
+        if (item.id === parseInt(id)) {
+            return (item.category = updatedCategory.category);
+        }
+    });
+    res.status(200).send(todos);
+    /*let categories = [];
     category = updatedCategory;
-    categories.push(category);
-    res.status(200).send(categories);
+    categories.push({ category });
+    res.status(200).send(categories);*/
 });
 
-app.delete('/todos/category', (req, res) => {
+app.delete('/todos/categories', (req, res) => {
     let { category } = req.query;
     let deleted = todos.filter((item) => {
         if (item.category === category) {
