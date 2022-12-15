@@ -7,19 +7,19 @@ let todos = [
         id: 0,
         todoContent: 'words',
         done: false,
-        category: 'home'
+        category: 'none'
     },
     {
         id: 1,
         todoContent: 'words 2',
         done: false,
-        category: 'work'
+        category: 'none'
     },
     {
         id: 2,
         todoContent: 'words 3',
         done: false,
-        category: 'work'
+        category: 'none'
     }
 ];
 
@@ -58,47 +58,47 @@ app.delete('/todos', (req, res) => {
 });
 
 app.get('/todos/categories', (req, res) => {
-    let categoryArray = [];
-    let { category } = req.query;
-    todos.filter((item) => {
-        console.log(typeof item.category);
-        if (item.category === category) {
-            if (
-                Array.isArray(item.category) ||
-                typeof item.category == 'object'
-            ) {
-                categoryArray.push(Array.from(category));
-            }
-            categoryArray.push(item);
+    let { searchCat } = req.query;
+
+    todos = todos.filter((item) => {
+        if (item.category === searchCat) {
+            return item;
+        } else if (Array.isArray(item.category)) {
+            return item;
         }
     });
-    res.send(categoryArray);
+
+    res.send(todos);
 });
 
-app.get('/todos/categories/:view', (req, res) => {
+app.get('/todos/categories/view-categories', (req, res) => {
     let categoryArray = [];
     let { category } = req.query;
-    todos.filter((item) => {
+    categoryArray = todos.filter((item) => {
         if (item.category === category) {
-            categoryArray.push(item.category);
+            return item.category;
+        } else if (Array.isArray(item.category)) {
+            return item.category;
         }
     });
-    res.send(categoryArray);
+
+    res.send(categoryArray[0].category);
 });
 
 app.post('/todos/categories', (req, res) => {
     let { id, newCategory, category } = req.query;
     let addedCategory = {
-        category: newCategory
+        category: newCategory.split(',')
     };
-    console.log(typeof id);
+
     let addNewCategory = todos.filter((item) => {
         if (item.id === parseInt(id)) {
-            console.log(typeof item.id);
-            return (item.category = [item.category, addedCategory.category]);
+            return (item.category = [
+                item.category,
+                addedCategory.category
+            ].flat(1));
         }
     });
-    console.log(todos);
     res.send(todos);
 });
 
@@ -107,27 +107,39 @@ app.put('/todos/categories', (req, res) => {
     let updatedCategory = {
         category: editedCategory
     };
-    let updatedCategories = todos.filter((item) => {
-        if (item.id === parseInt(id)) {
+
+    let editedCategories = todos.filter((item) => {
+        if (item.id === parseInt(id) && Array.isArray(item.category)) {
+            return item.category.splice(
+                item.category.indexOf(category),
+                1,
+                updatedCategory.category
+            );
+        }
+        if (item.id === parseInt(id) && !Array.isArray(item.category)) {
             return (item.category = updatedCategory.category);
         }
     });
+
     res.status(200).send(todos);
-    /*let categories = [];
-    category = updatedCategory;
-    categories.push({ category });
-    res.status(200).send(categories);*/
 });
 
 app.delete('/todos/categories', (req, res) => {
     let { category } = req.query;
-    let deleted = todos.filter((item) => {
-        if (item.category === category) {
-            return;
+    todos = todos.filter((item) => {
+        if (Array.isArray(item.category)) {
+            return item.category.splice(
+                item.category.indexOf(category),
+                1,
+                'none'
+            );
+        }
+        if (item.category === category && !Array.isArray(item.category)) {
+            return (item.category = 'none');
         }
     });
 
-    res.send(deleted);
+    res.send(todos);
 });
 
 app.listen(PORT, () => console.log(`listening on port ${PORT}`));
